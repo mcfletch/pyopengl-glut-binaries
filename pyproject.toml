@@ -39,7 +39,9 @@ classifiers = [
 dependencies = []
 
 [project.optional-dependencies]
-test = ["pytest"]
+# Wheel assertions invoke the backend without isolation; Python 3.12+ no
+# longer seeds setuptools. requests exercises the legacy recipe tests too.
+test = ["pytest", "setuptools>=77", "requests"]
 dev = ["pyopengl-glut-binaries[test]", "mypy", "ruff", "build"]
 
 [project.urls]

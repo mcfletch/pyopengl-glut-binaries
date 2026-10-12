@@ -1,0 +1,22 @@
+{
+  "freeglut.tar.gz": {
+    "url": "https://codeload.github.com/freeglut/freeglut/tar.gz/3db1649ce1f5e42f1338b51e3fa14849be547d5d",
+    "sha256": "81490c22512a4c2594e8105526dc5d5827bf0c1f825eb9abd698c76d04d652df"
+  },
+  "gle.tar.gz": {
+    "url": "https://deb.debian.org/debian/pool/main/g/gle/gle_3.1.0.orig.tar.gz",
+    "sha256": "dc8a74b5632b2c3fc84d33c2bf6ee43210b71b8ddf0a3166a25aeb46620bfa27"
+  },
+  "opengl32.def": {
+    "url": "https://raw.githubusercontent.com/mingw-w64/mingw-w64/3ad495b55f0524c61fa3d02dbd0cdeceabb0c038/mingw-w64-crt/lib-common/opengl32.def",
+    "sha256": "d68950dfacc4ea3ce9c0e176084cf682e5be199b47c42bc4fdf6a1f8d4f93d66"
+  },
+  "glu32.def": {
+    "url": "https://raw.githubusercontent.com/mingw-w64/mingw-w64/3ad495b55f0524c61fa3d02dbd0cdeceabb0c038/mingw-w64-crt/lib-common/glu32.def",
+    "sha256": "7953815a33a2ce1ad2a4022de8582f551e94abe226817682a1f951ea988bf02f"
+  },
+  "mingw-COPYING": {
+    "url": "https://raw.githubusercontent.com/mingw-w64/mingw-w64/3ad495b55f0524c61fa3d02dbd0cdeceabb0c038/COPYING",
+    "sha256": "99a69660981156c21336fdb5661f89341b013c94e4bf9e1c7467b4745718397f"
+  }
+}

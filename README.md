@@ -35,10 +35,47 @@ from the running interpreter's word size and compiler generation:
 | **vc10** (Visual Studio 2010) | `freeglut32.vc10.dll`, `gle32.vc10.dll` | `freeglut64.vc10.dll`, `gle64.vc10.dll` |
 | **vc14** (Visual Studio 2015 and later) | `freeglut32.vc14.dll`, `gle32.vc14.dll` | `freeglut64.vc14.dll`, `gle64.vc14.dll` |
 
-Both the `win32` and the `win_amd64` wheel carry all twelve, along with the
-upstream licence and readme files. The word sizes are not split between the
-two wheels: a split would halve the download and is a change to make on its
-own, where a regression in it is attributable.
+The `win32` and `win_amd64` wheels each carry only their six matching DLLs,
+along with the upstream licence and readme files. The `win_arm64` wheel
+carries exactly `freeglutarm64.vc14.dll` and `glearm64.vc14.dll`. Wheel builds
+validate PE Machine values and fail on missing or wrongly labelled DLLs.
+`BUILDS` describes the files actually installed, not every architecture.
+
+### Native Windows ARM64 builds
+
+ARM64 is built from public FreeGLUT 3.8.0 and GLE 3.1.0 source, not from the
+legacy binaries or by relabelling an x64 wheel. `tools/arm64-sources.json`
+pins source URLs/commits and SHA256 hashes. The build verifies every download
+before extracting/compiling. Licences and the source manifest ship in the wheel.
+
+In an **ARM64-targeting MSVC developer shell**, with Python 3.12+, CMake and
+Ninja installed:
+
+```powershell
+python -m pip install build cmake ninja
+python tools/build_arm64.py --work C:/build/pyopengl-arm64
+python -m build --wheel -C--build-option=--plat-name=win_arm64
+```
+
+The work directory must not exist. The build uses the static MSVC runtime and
+at most two compiler jobs. Where the Windows SDK omits ARM64 OpenGL/GLU import
+libraries, it generates import stubs from hash-pinned mingw-w64 definitions.
+The implementations are still the Windows system DLLs; no substitute graphics
+implementation or foreign-architecture library is bundled. The relevant
+mingw-w64 licence travels with the wheel too.
+
+The reusable `arm64.yml` job builds on `windows-11-arm`, installs into fresh
+CPython 3.11 and 3.14 environments (the native ARM64 interpreter floor and the
+suite's ceiling), then runs `tests/smoke_arm64.py` outside the checkout. It checks the
+interpreter ABI, exact payload, PE Machine, licences, real DLL loads, FreeGLUT
+init state and GLE state round-trips. It requires **no GPU, window or
+OpenGL context** and makes no rendering claim. It runs for pull requests and
+as part of the existing release test gate; its wheel artifact is collected by
+the existing release publisher. No version is bumped by this change.
+
+PyOpenGL also needs the ARM64 loader selection in
+[mcfletch/pyopengl#177](https://github.com/mcfletch/pyopengl/pull/177);
+this package deliberately does not duplicate that loader change.
 
 ## Using it directly
 
@@ -57,7 +94,7 @@ The packaging is BSD-licensed; see `LICENSE`. The libraries are third-party
 works under their own terms, which ship beside them in
 `src/pyopengl_glut_binaries/DLLS/`:
 
-- **freeglut** — 3.0.0-1.mp for MSVC, Martin Payne's build.
+- **freeglut** — 3.0.0-1.mp for legacy x86/x64 (Martin Payne); 3.8.0 for ARM64.
   [freeglut](http://freeglut.sourceforge.net/) upstream publishes source
   rather than Windows binaries. X-Consortium licence, in
   `freeglut_COPYING.txt`.

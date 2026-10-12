@@ -1,0 +1,2 @@
+include tools/build_arm64.py tools/arm64-sources.json
+include tests/smoke_arm64.py

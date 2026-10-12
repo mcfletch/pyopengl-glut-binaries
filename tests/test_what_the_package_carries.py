@@ -108,8 +108,7 @@ def wheel(tmp_path_factory):
         text=True,
         timeout=600,
     )
-    if completed.returncode != 0:
-        pytest.skip('this checkout does not build a wheel here: %s' % (completed.stderr[-2000:],))
+    assert completed.returncode == 0, completed.stderr[-2000:]
     built = list(into.glob('*.whl'))
     assert len(built) == 1, built
     with zipfile.ZipFile(built[0]) as handle:
@@ -126,7 +125,16 @@ class TestWhatTheWheelShips:
             for member in members
             if member.startswith('pyopengl_glut_binaries/DLLS/') and not member.endswith('/')
         )
-        assert shipped == sorted(os.listdir(binaries.DLL_DIRECTORY))
+        platform = _name.rsplit('-', 1)[1].removesuffix('.whl')
+        suffix = {'win32': '32', 'win_amd64': '64', 'win_arm64': 'arm64'}.get(platform)
+        expected = [
+            name
+            for name in os.listdir(binaries.DLL_DIRECTORY)
+            if not name.endswith('.dll')
+            or suffix is None
+            or name.startswith(('freeglut' + suffix + '.', 'gle' + suffix + '.'))
+        ]
+        assert shipped == sorted(expected)
 
     def test_it_is_tagged_for_a_platform(self, wheel):
         """An ``any`` wheel is the state this distribution exists to leave:

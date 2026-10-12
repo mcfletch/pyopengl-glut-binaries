@@ -37,7 +37,7 @@ DLL_DIRECTORY = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'DLLS')
 #: The libraries carried here, and where each came from.
 LIBRARIES = {
     'freeglut': (
-        "freeglut 3.0.0-1.mp for MSVC -- Martin Payne's build, since freeglut "
+        'freeglut 3.0.0-1.mp for x86/x64 (Martin Payne), 3.8.0 for ARM64; '
         'upstream publishes source rather than Windows binaries. Not the '
         'original GLUT: these export glutMainLoopEvent and the rest of '
         "freeglut's additions."
@@ -45,14 +45,9 @@ LIBRARIES = {
     'gle': 'the GLE tubing and extrusion library, built as a Windows DLL',
 }
 
-#: The word sizes and compiler generations each library is built for.
+#: The builds present in this checkout or architecture-specific wheel.
 #:
 #: ``vc9`` is Visual Studio 2008, ``vc10`` is 2010 and ``vc14`` is 2015 and
 #: later. PyOpenGL asks for the generation matching the interpreter that is
-#: running, so all six of each are here rather than only the newest.
-BUILDS = tuple(
-    '%s%s.%s' % (library, size, vc)
-    for library in ('freeglut', 'gle')
-    for size in ('32', '64')
-    for vc in ('vc9', 'vc10', 'vc14')
-)
+#: running. ARM64 uses vc14; x86 and x64 retain all three generations.
+BUILDS = tuple(sorted(name[:-4] for name in os.listdir(DLL_DIRECTORY) if name.endswith('.dll')))

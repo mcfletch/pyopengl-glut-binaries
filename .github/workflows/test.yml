@@ -12,6 +12,9 @@ on:
   workflow_call:
 
 jobs:
+  arm64:
+    uses: ./.github/workflows/arm64.yml
+
   # Both platforms, because the two halves of the question are on different
   # machines: that the files are present and named as PyOpenGL asks for them is
   # answerable anywhere, and that a checkout of a binary payload survives the

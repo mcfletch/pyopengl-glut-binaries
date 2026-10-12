@@ -69,7 +69,9 @@ jobs:
               ;;
           esac
 
-  # One Linux runner builds both Windows wheels. Nothing here is compiled --
+  # ARM64 is built and smoke-tested in tests/arm64 and its wheel-win-arm64
+  # artifact is collected by publish alongside these legacy wheels.
+  # One Linux runner packages the x86/x64 Windows wheels. Nothing here is compiled --
   # the DLLs are prebuilt data and the tag comes from `--plat-name` rather than
   # from the machine -- so a Windows runner would build the same bytes more
   # slowly. cibuildwheel is for the same reason not used: it exists to compile

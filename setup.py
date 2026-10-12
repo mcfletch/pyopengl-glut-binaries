@@ -8,9 +8,12 @@ the tag achieves that. setuptools decides purity from whether there are
 extension modules to build, and there are none here -- the DLLs are data --
 so it would produce ``py3-none-any`` and every platform would get them again.
 
-There is nothing to compile, so the tag is the only thing this file exists for;
-everything else about the project is declared in ``pyproject.toml``.
+This packages prebuilt DLLs and validates their architecture. ARM64 binaries
+are compiled first by tools/build_arm64.py; metadata lives in pyproject.toml.
 """
+
+import struct
+from pathlib import Path
 
 from setuptools import setup
 from setuptools.command.bdist_wheel import bdist_wheel as _bdist_wheel
@@ -40,6 +43,42 @@ class bdist_wheel(_bdist_wheel):
     ``--plat-name`` still chooses the platform, which is how a single Windows
     runner produces both the ``win32`` and the ``win_amd64`` wheel.
     """
+
+    def run(self):
+        # Build first, then filter only the staged copy. Never remove checkout
+        # DLLs: release builds package multiple architectures sequentially.
+        self.run_command('build')
+        platform = self.plat_name.replace('-', '_')
+        targets = {
+            'win32': ('32', 0x14C),
+            'win_amd64': ('64', 0x8664),
+            'win_arm64': ('arm64', 0xAA64),
+        }
+        if platform in targets:
+            suffix, machine = targets[platform]
+            directory = (
+                Path(self.get_finalized_command('build').build_lib)
+                / 'pyopengl_glut_binaries'
+                / 'DLLS'
+            )
+            expected = {
+                '%s%s.%s.dll' % (lib, suffix, vc)
+                for lib in ('freeglut', 'gle')
+                for vc in (('vc14',) if suffix == 'arm64' else ('vc9', 'vc10', 'vc14'))
+            }
+            for dll in directory.glob('*.dll'):
+                if dll.name not in expected:
+                    dll.unlink()
+            for name in expected:
+                data = (directory / name).read_bytes()
+                pe = struct.unpack_from('<I', data, 0x3C)[0]
+                if (
+                    data[pe : pe + 4] != b'PE\0\0'
+                    or struct.unpack_from('<H', data, pe + 4)[0] != machine
+                ):
+                    raise ValueError('Wrong PE architecture: %s' % name)
+        self.skip_build = True
+        super().run()
 
     def get_tag(self):
         _python, _abi, platform = super().get_tag()
